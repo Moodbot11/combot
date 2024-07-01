@@ -1,0 +1,4 @@
+fastapi
+openai
+uvicorn
+python-multipart  # Optional, for handling file uploads

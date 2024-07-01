@@ -1,0 +1,52 @@
+from openai import OpenAI
+import os
+from dotenv import load_dotenv
+import requests
+from pathlib import Path
+from playsound import playsound
+
+# Load environment variables
+load_dotenv()
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+def listen():
+    # Your existing logic for speech recognition
+    pass
+
+def speak(text):
+    response = client.audio.speech.create(
+        model="tts-1",
+        voice="alloy",
+        input=text
+    )
+    audio_url = response['url']  # Assuming the response contains the audio URL
+    audio_path = download_audio(audio_url)
+    playsound(audio_path)
+
+def download_audio(url):
+    response = requests.get(url)
+    audio_path = Path("response.mp3")
+    with open(audio_path, 'wb') as f:
+        f.write(response.content)
+    return audio_path
+
+def main():
+    print("Chat with GPT-4 (say 'quit' to exit)")
+
+    while True:
+        user_input = listen()  # Keep your existing speech-to-text logic
+
+        if user_input is None or user_input.lower() == 'quit':
+            break
+
+        response = client.Completion.create(
+            engine="gpt-4-1106-preview",
+            prompt=user_input,
+            max_tokens=150
+        )
+        response_text = response.choices[0].text.strip()
+        print("GPT-4:", response_text)
+        speak(response_text)  # Now using OpenAI's TTS for the response
+
+if __name__ == "__main__":
+    main()
